@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)http://127.0.0.1:5500/.vscode/kn.html/diet2.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Ayurvedic Practice Management System</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: url("https://images.unsplash.com/photo-1505751172876-fa1923c5c528")
+                    no-repeat center center/cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 900px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #5a3e2b;
+        font-size: 28px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    input {
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 18px;
+        cursor: pointer;
+        background: #8b5e3c;
+        color: white;
+    }
+
+    button:hover {
+        background: #6f462a;
+    }
+
+    .link {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .link span {
+        color: #8b5e3c;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <div id="loginForm" class="">
+        <h2>User Login</h2>
+
+        <div class="form-grid">
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Password">
+        </div>
+
+        <button onclick="login()">Login</button>
+
+        <div class="link">
+            New user?
+            <span onclick="showRegister()">Create Account</span>
+        </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerForm" class="hidden">
+        <h2>Create Account</h2>
+
+        <div class="form-grid">
+            <input type="text" id="regName" placeholder="Full Name">
+            <input type="email" id="regEmail" placeholder="Email">
+            <input type="password" id="regPassword" placeholder="Password">
+            <input type="password" id="regConfirm" placeholder="Confirm Password">
+        </div>
+
+        <button onclick="register()">Register</button>
+
+        <div class="link">
+            Already have account?
+            <span onclick="showLogin()">Login</span>
+        </div>
+    </div>
+
+    <!-- USER DETAILS -->
+    <div id="detailsForm" class="hidden">
+        <h2>User Health Details</h2>
+
+        <div class="form-grid">
+            <input type="number" id="age" placeholder="Age">
+            <input type="number" id="weight" placeholder="Weight (kg)">
+            <input type="number" id="height" placeholder="Height (cm)">
+        </div>
+
+        <button onclick="showDiet()">Get Diet Plan</button>
+    </div>
+
+    <!-- DIET PLAN -->
+    <div id="dietPlan" class="hidden">
+        <h2>Diet Recommendation</h2>
+        <p id="dietResult">
+            <b>Name:</b> mano<br>
+            <b>Age:</b> 20<br>
+            <b>BMI:</b> 276887.78<br><br>
+            Overweight: Green vegetables, soups, fruits.
+        </p>
+
+        <button onclick="logout()">Logout</button>
+    </div>
+
+</div>
+
+<script>
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    let currentUser = null;
+
+    function showRegister() {
+        document.getElementById("loginForm").classList.add("hidden");
+        document.getElementById("registerForm").classList.remove("hidden");
+    }
+
+    function showLogin() {
+        document.getElementById("registerForm").classList.add("hidden");
+        document.getElementById("detailsForm").classList.add("hidden");
+        document.getElementById("dietPlan").classList.add("hidden");
+        document.getElementById("loginForm").classList.remove("hidden");
+    }
+
+    function register() {
+        let name = document.getElementById("regName").value;
+        let email = document.getElementById("regEmail").value;
+        let pass = document.getElementById("regPassword").value;
+        let confirm = document.getElementById("regConfirm").value;
+
+        if (!name || !email || !pass) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        if (pass !== confirm) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        let exists = users.find(u => u.email === email);
+        if (exists) {
+            alert("User already exists");
+            return;
+        }
+
+        users.push({ name, email, pass });
+        localStorage.setItem("users", JSON.stringify(users));
+
+        alert("Account created successfully!");
+        showLogin();
+    }
+
+    function login() {
+        let email = document.getElementById("loginEmail").value;
+        let pass = document.getElementById("loginPassword").value;
+
+        let user = users.find(u => u.email === email && u.pass === pass);
+
+        if (user) {
+            currentUser = user;
+            document.getElementById("loginForm").classList.add("hidden");
+            document.getElementById("detailsForm").classList.remove("hidden");
+        } else {
+            alert("Invalid Email or Password");
+        }
+    }
+
+    function showDiet() {
+        let age = document.getElementById("age").value;
+        let weight = document.getElementById("weight").value;
+        let height = document.getElementById("height").value;
+
+        if (!age || !weight || !height) {
+            alert("Please enter all health details");
+            return;
+        }
+
+        let bmi = weight / ((height / 100) ** 2);
+        let diet = "";
+
+        if (bmi < 18.5)
+            diet = "Underweight: Milk, nuts, ghee, rice, bananas.";
+        else if (bmi < 25)
+            diet = "Healthy: Balanced meals, fruits, vegetables.";
+        else
+            diet = "Overweight: Green vegetables, soups, fruits.";
+
+        document.getElementById("detailsForm").classList.add("hidden");
+        document.getElementById("dietPlan").classList.remove("hidden");
+
+        document.getElementById("dietResult").innerHTML = `
+            <b>Name:</b> ${currentUser.name}<br>
+            <b>Age:</b> ${age}<br>
+            <b>BMI:</b> ${bmi.toFixed(2)}<br><br>
+            ${diet}
+        `;
+    }
+
+    function logout() {
+        currentUser = null;
+        showLogin();
+    }
+</script>
+
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+
+
+</body></html>
